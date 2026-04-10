@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 运维助手</title>
+    <!-- Vue 3 CDN -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <!-- Element Plus -->
+    <link rel="stylesheet" href="https://unpkg.com/element-plus/dist/index.css" />
+    <script src="https://unpkg.com/element-plus"></script>
+    <!-- Axios -->
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #f0f2f5; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .app-container { max-width: 900px; margin: 40px auto; background: white; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); overflow: hidden; }
+        .chat-header { background: #1e3c72; color: white; padding: 20px; text-align: center; font-size: 24px; font-weight: bold; }
+        .chat-messages { height: 500px; overflow-y: auto; padding: 20px; background: #f9fafc; }
+        .message { margin-bottom: 16px; display: flex; }
+        .user-message { justify-content: flex-end; }
+        .assistant-message { justify-content: flex-start; }
+        .bubble { max-width: 70%; padding: 12px 16px; border-radius: 18px; line-height: 1.4; word-wrap: break-word; }
+        .user-bubble { background: #1e3c72; color: white; border-bottom-right-radius: 4px; }
+        .assistant-bubble { background: white; border: 1px solid #e4e7ed; color: #2c3e50; border-bottom-left-radius: 4px; }
+        .chat-input { padding: 20px; background: white; border-top: 1px solid #e4e7ed; display: flex; gap: 12px; }
+        .chat-input input { flex: 1; padding: 12px; border: 1px solid #dcdfe6; border-radius: 24px; outline: none; font-size: 14px; }
+        .chat-input button { background: #1e3c72; color: white; border: none; padding: 0 20px; border-radius: 24px; cursor: pointer; }
+        .loading { text-align: center; color: #909399; font-size: 12px; margin-top: 8px; }
+        .confirm-badge { background: #fef0e6; border-left: 4px solid #e6a23c; padding: 8px 12px; margin-top: 8px; font-size: 12px; color: #e6a23c; }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div class="app-container">
+        <div class="chat-header">
+            🤖 AI 游戏运维助手
+        </div>
+        <div class="chat-messages" ref="messageContainer">
+            <div v-for="(msg, idx) in messages" :key="idx" :class="['message', msg.role === 'user' ? 'user-message' : 'assistant-message']">
+                <div :class="['bubble', msg.role === 'user' ? 'user-bubble' : 'assistant-bubble']">
+                    {{ msg.content }}
+                    <div v-if="msg.needConfirm" class="confirm-badge">
+                        ⚠️ 危险操作，请在下方输入 YES 确认
+                    </div>
+                </div>
+            </div>
+            <div v-if="loading" class="loading">AI 正在思考...</div>
+        </div>
+        <div class="chat-input">
+            <input type="text" v-model="inputText" @keyup.enter="sendMessage" placeholder="例如：查询 lobby-01 的在线人数" />
+            <button @click="sendMessage" :disabled="loading">发送</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const { createApp, ref, nextTick } = Vue;
+    createApp({
+        setup() {
+            const messages = ref([]);
+            const inputText = ref('');
+            const loading = ref(false);
+            const sessionId = ref('session_' + Date.now());
+            const messageContainer = ref(null);
+
+            const scrollToBottom = () => {
+                nextTick(() => {
+                    if (messageContainer.value) {
+                        messageContainer.value.scrollTop = messageContainer.value.scrollHeight;
+                    }
+                });
+            };
+
+            const sendMessage = async () => {
+                if (!inputText.value.trim()) return;
+                const userMsg = inputText.value;
+                messages.value.push({ role: 'user', content: userMsg });
+                inputText.value = '';
+                scrollToBottom();
+                loading.value = true;
+                try {
+                    const response = await axios.post('/api/chat', {
+                        prompt: userMsg,
+                        session_id: sessionId.value
+                    });
+                    const data = response.data;
+                    messages.value.push({
+                        role: 'assistant',
+                        content: data.reply,
+                        needConfirm: data.need_confirm
+                    });
+                    if (data.need_confirm) {
+                        // 如果返回需要确认，下一次用户输入 YES 会继续处理，无需额外操作
+                    }
+                    scrollToBottom();
+                } catch (error) {
+                    console.error(error);
+                    messages.value.push({ role: 'assistant', content: '抱歉，发生错误，请稍后重试。' });
+                    scrollToBottom();
+                } finally {
+                    loading.value = false;
+                }
+            };
+
+            return {
+                messages,
+                inputText,
+                loading,
+                sessionId,
+                messageContainer,
+                sendMessage,
+                scrollToBottom
+            };
+        }
+    }).use(ElementPlus).mount('#app');
+</script>
+</body>
+</html>
