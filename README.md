@@ -13,7 +13,7 @@
 
 ### 1. 环境要求
 - Python 3.8+
-- DeepSeek API Key（[获取地址](https://platform.deepseek.com/)）
+- openAi API Key
 
 ### 2. 安装后端依赖
 ```bash
