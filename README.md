@@ -36,11 +36,11 @@ uvicorn main:app --reload --host 0.0.0.0 --port 8000
 直接用浏览器打开 frontend/index.html（注意：由于跨域，建议使用 Live Server 或直接通过后端挂载静态文件）。
 
 ### 6. 使用示例
-• 输入：查询 lobby-01 的在线人数
-• 输入：重启 game-01 服务器 → 助手要求确认 → 输入 YES
-• 输入：分析 game-02 的错误日志
+• 输入：查询 lobby-01 的在线人数  
+• 输入：重启 game-01 服务器 → 助手要求确认 → 输入 YES  
+• 输入：分析 game-02 的错误日志  
 
 ### 扩展开发
-• 将 tools.py 中的模拟函数替换为真实 SSH/Prometheus 调用
-• 增加更多工具（如查看 Pod 状态、执行脚本）
-• 集成到钉钉机器人
+• 将 tools.py 中的模拟函数替换为真实 SSH/Prometheus 调用  
+• 增加更多工具（如查看 Pod 状态、执行脚本）  
+• 集成到钉钉机器人  
