@@ -41,6 +41,6 @@ uvicorn main:app --reload --host 0.0.0.0 --port 8000
 • 输入：分析 game-02 的错误日志  
 
 ### 扩展开发
-• 将 tools.py 中的模拟函数替换为真实 SSH/Prometheus 调用  
+• 将 tools.py 中的模拟函数替换为真实SSH/Prometheus调用  
 • 增加更多工具（如查看 Pod 状态、执行脚本）  
 • 集成到钉钉机器人  
