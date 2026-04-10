@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from typing import Optional, Dict, Any
 import agent
@@ -14,6 +15,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.mount("/", StaticFiles(directory="../frontend", html=True), name="static")
 
 # 存储会话中的待确认操作（生产环境应用 Redis 或内存字典，此处简化）
 pending_confirmations: Dict[str, Any] = {}
